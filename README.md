@@ -97,16 +97,14 @@ Air-waves/
 ├─ Air-Waves.ico                  # 桌面快捷方式图标
 ├─ README.md
 ├─ START.md                       # 快速上手：功能简介 + 下载与运行
-├─ assets/
-│  ├─ character/
-│  │  ├─ character-primary.png    # 首页背景（= 指定角色图）
-│  │  ├─ character-figure.png     # 抠好的透明人物（用于合成背景 / 小屏缩影）
-│  │  ├─ character-alt-01..05.png # 备选人物
-│  └─ scene/
-│     ├─ scene-player.png         # 播放页背景（已合成：场景 + 薄雾 + 人物）
-│     └─ scene-alt-01..04.png     # 备选场景
-├─ character/                     # 原始素材（未改动，可保留或删除）
-└─ scene/                         # 原始素材（未改动，可保留或删除）
+└─ assets/
+   ├─ character/
+   │  ├─ character-primary.png    # 首页背景（= 指定角色图）
+   │  ├─ character-figure.png     # 抠好的透明人物（用于合成背景 / 小屏缩影）
+   │  └─ character-alt-01..05.png # 备选人物
+   └─ scene/
+      ├─ scene-player.png         # 播放页背景（已合成：场景 + 薄雾 + 人物）
+      └─ scene-alt-01..04.png     # 备选场景
 ```
 
 > 浏览器无法直接加载 Windows 绝对路径，所以图片已复制到 `assets/` 下，页面统一用相对路径引用。
