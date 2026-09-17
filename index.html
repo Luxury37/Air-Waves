@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05080c" />
+<meta name="color-scheme" content="dark" />
+<title>Air-Waves // 脑波听觉节拍 · 专注与放松辅助</title>
+<meta name="description" content="Air-Waves：基于 Web Audio API 的双耳节拍 / 等时节拍发生器，用于工作学习时的专注与放松辅助。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23070c12'/%3E%3Cpolyline points='2,17 8,17 11,7 15,26 19,12 22,17 30,17' fill='none' stroke='%236fe3ff' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-view="home" data-state="idle">
+
+<!-- ============ 全局 CRT 叠加层（扫描线 / 噪点 / 暗角 / 闪烁） ============ -->
+<div class="fx" aria-hidden="true">
+  <div class="fx__scanlines"></div>
+  <div class="fx__noise"></div>
+  <div class="fx__vignette"></div>
+  <div class="fx__flicker"></div>
+  <div class="fx__glitchbar"></div>
+</div>
+
+<!-- ============ 顶部状态条 ============ -->
+<header class="topbar">
+  <div class="topbar__left">
+    <span class="led" data-led></span>
+    <span class="topbar__sys">AIR-WAVES / RX-10</span>
+  </div>
+  <div class="topbar__right">
+    <span class="topbar__meta" id="clock">--:--:--</span>
+    <span class="topbar__meta topbar__meta--dim">LOCAL TIME</span>
+  </div>
+</header>
+
+<main class="stage">
+
+  <!-- ==================================================================== -->
+  <!-- 页面 1：首页                                                          -->
+  <!-- ==================================================================== -->
+  <section class="view view--home" id="view-home" aria-label="首页">
+    <div class="home__bg" id="home-bg" aria-hidden="true"></div>
+    <div class="home__grid" aria-hidden="true"></div>
+    <div class="home__dots" aria-hidden="true"></div>
+
+    <div class="home__inner">
+      <p class="home__kicker glitch" data-text="// SIGNAL ACQUIRED">// SIGNAL ACQUIRED</p>
+
+      <h1 class="home__title glitch" data-text="Air-Waves">Air-Waves</h1>
+
+      <p class="home__sub">
+        听觉节拍发生器 · <span class="cy">10.0 Hz</span> ALPHA BINAURAL
+      </p>
+
+      <p class="home__desc">
+        用双耳节拍营造适合专注与放松的声音环境。<br class="br-desktop" />
+        戴上耳机，调低音量，让频段陪你进入心流。
+      </p>
+
+      <div class="home__actions">
+        <button class="btn btn--start" id="btn-start" type="button">
+          <span class="btn__glyph" aria-hidden="true">▶</span>
+          <span class="btn__label">START</span>
+          <span class="btn__cn">开始</span>
+        </button>
+      </div>
+
+      <ul class="home__bands" aria-label="可用频段">
+        <li class="chip"><b>THETA</b><span>6–8 Hz</span></li>
+        <li class="chip chip--active"><b>ALPHA</b><span>8–12 Hz</span></li>
+        <li class="chip"><b>LOW BETA</b><span>12–18 Hz</span></li>
+      </ul>
+
+      <p class="home__hint">
+        <span class="key">SPACE</span> 播放/暂停 ·
+        <span class="key">M</span> 静音 ·
+        <span class="key">ESC</span> 返回
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 页面 2：播放界面                                                      -->
+  <!-- ==================================================================== -->
+  <section class="view view--player" id="view-player" aria-label="播放界面">
+    <div class="player__bg" id="player-bg" aria-hidden="true"></div>
+    <div class="player__grade" aria-hidden="true"></div>
+    <div class="player__grain" aria-hidden="true"></div>
+
+    <!-- 人物：从角色图中抠出的区域，混合模式融入场景，位于右下中景 -->
+    <div class="figure" id="figure" aria-hidden="true"></div>
+
+    <!-- 无线电刻度尺 -->
+    <div class="dial" aria-hidden="true">
+      <div class="dial__track" id="dial-track"></div>
+      <div class="dial__needle" id="dial-needle"></div>
+    </div>
+
+    <!-- 顶部工具条 -->
+    <div class="hud">
+      <button class="btn btn--ghost" id="btn-back" type="button">
+        <span aria-hidden="true">◀</span> 返回首页
+      </button>
+      <div class="hud__tags">
+        <span class="tag" id="tag-preset">ALPHA / 默认</span>
+        <span class="tag tag--dim" id="tag-mode">BINAURAL</span>
+      </div>
+    </div>
+
+    <!-- 主读数 -->
+    <div class="readout">
+      <div class="readout__row">
+        <span class="readout__label">BAND</span>
+        <span class="readout__value" id="ro-band">ALPHA</span>
+      </div>
+      <div class="readout__row">
+        <span class="readout__label">BEAT Δf</span>
+        <span class="readout__value readout__value--big">
+          <span id="ro-beat">10.0</span><em>Hz</em>
+        </span>
+      </div>
+      <div class="readout__row">
+        <span class="readout__label">CARRIER</span>
+        <span class="readout__value" id="ro-carrier">L 200.0 / R 210.0 Hz</span>
+      </div>
+      <div class="readout__row">
+        <span class="readout__label">STATUS</span>
+        <span class="readout__value readout__value--status">
+          <span class="dot" id="status-dot"></span><span id="ro-status">STANDBY</span>
+        </span>
+      </div>
+      <div class="readout__row">
+        <span class="readout__label">ELAPSED</span>
+        <span class="readout__value mono" id="ro-elapsed">00:00</span>
+      </div>
+    </div>
+
+    <!-- VU 表 + 波形 -->
+    <div class="meter" aria-hidden="true">
+      <div class="meter__head">
+        <span>OUTPUT LEVEL</span>
+        <span class="mono" id="vu-value">−∞ dB</span>
+      </div>
+      <div class="meter__bar"><i id="vu-fill"></i></div>
+      <canvas class="meter__wave" id="wave" width="640" height="96"></canvas>
+    </div>
+
+    <!-- 控制台 -->
+    <div class="console" role="group" aria-label="播放控制">
+      <div class="console__head">
+        <span class="console__title">CONTROL DECK</span>
+        <span class="console__figure" aria-hidden="true"></span>
+        <span class="console__id">UNIT 07 · REV.C</span>
+      </div>
+
+      <div class="console__main">
+        <button class="btn btn--play" id="btn-play" type="button" aria-pressed="false">
+          <span class="btn__icon" id="play-icon" aria-hidden="true">▶</span>
+          <span class="btn__text" id="play-text">PLAY</span>
+        </button>
+
+        <div class="freq">
+          <span class="freq__label">TARGET BAND / 频段</span>
+          <div class="seg" role="radiogroup" aria-label="频段选择">
+            <button class="seg__btn" type="button" role="radio" aria-checked="false" data-preset="theta">
+              <b>THETA</b><i>6–8 Hz</i><u>深度放松 / 创意</u>
+            </button>
+            <button class="seg__btn is-active" type="button" role="radio" aria-checked="true" data-preset="alpha">
+              <b>ALPHA</b><i>8–12 Hz</i><u>放松专注 · 推荐</u>
+            </button>
+            <button class="seg__btn" type="button" role="radio" aria-checked="false" data-preset="beta">
+              <b>LOW BETA</b><i>12–18 Hz</i><u>工作学习专注</u>
+            </button>
+          </div>
+          <div class="freq__fine">
+            <label for="beat-range">Δf <span class="mono" id="beat-range-val">10.0 Hz</span></label>
+            <input type="range" id="beat-range" min="4" max="18" step="0.5" value="10" />
+          </div>
+        </div>
+
+        <div class="knobs">
+          <label class="knob" for="vol-range">
+            <span class="knob__label">VOLUME</span>
+            <span class="mono" id="vol-val">35%</span>
+            <input type="range" id="vol-range" min="0" max="100" step="1" value="35" />
+          </label>
+
+          <div class="toggle">
+            <span class="knob__label">TONE MODE</span>
+            <div class="switch">
+              <button class="switch__btn is-active" type="button" data-mode="binaural">双耳</button>
+              <button class="switch__btn" type="button" data-mode="isochronic">等时</button>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <span class="knob__label">AMBIENT NOISE</span>
+            <div class="switch">
+              <button class="switch__btn" type="button" id="btn-noise" aria-pressed="false">OFF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="console__note">
+        <b>⚠ 建议佩戴耳机</b>，音量适中。双耳节拍依赖左右声道差异，外放时效果会明显减弱。
+      </p>
+    </div>
+
+    <p class="disclaimer">
+      本工具仅用于放松与专注辅助，非医疗设备。不用于诊断、治疗或预防任何疾病。如感不适请立即停止。
+    </p>
+  </section>
+
+</main>
+
+<!-- ============ 启动遮罩（音频上下文握手） ============ -->
+<div class="boot" id="boot" hidden>
+  <div class="boot__box">
+    <p class="boot__line">ESTABLISHING AUDIO LINK…</p>
+    <div class="boot__bar"><i></i></div>
+    <p class="boot__sub mono">Web Audio API · AudioContext.resume()</p>
+  </div>
+</div>
+
+<noscript>
+  <div class="noscript">
+    本工具依赖 JavaScript 与 Web Audio API，请在浏览器中启用 JavaScript。
+  </div>
+</noscript>
+
+<script src="audio.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

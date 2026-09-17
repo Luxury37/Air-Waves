@@ -1,0 +1,23 @@
+# ---- OS metadata ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+
+# ---- Editors / IDEs ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Logs / temp ----
+*.log
+
+# ---- 本地原始素材（不入库）----
+# scene/ 与 character/ 是 assets/ 的逐字节重复副本（MD5 相同），约 46MB。
+# 运行时只加载 assets/，这两个目录仅作为本地原始素材保留，故不纳入版本控制。
+scene/
+character/
