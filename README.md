@@ -108,7 +108,7 @@ Air-waves/
 ```
 
 > 浏览器无法直接加载 Windows 绝对路径，所以图片已复制到 `assets/` 下，页面统一用相对路径引用。
-> 原始 `character/`、`scene/` 目录保留未动，`assets/` 里的副本才是页面实际使用的资源。
+> 原始 `character/`、`scene/` 目录仅本地保留、未纳入仓库（见 `.gitignore`），`assets/` 里的副本才是页面实际使用的资源。
 
 ---
 
